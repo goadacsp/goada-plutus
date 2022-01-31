@@ -1,14 +1,14 @@
-{ pure ? false, source-repo-override ? { } }:
+{ pure ? false }:
 let
-  packages = import ./. { inherit source-repo-override; };
-  inherit (packages) pkgs plutus-starter;
-  inherit (plutus-starter) haskell;
+  packages = import ./.;
+  inherit (packages) pkgs goada-plutus;
+  inherit (goada-plutus) haskell;
 
 in
   haskell.project.shellFor {
     withHoogle = false;
 
-    nativeBuildInputs = with plutus-starter; [
+    nativeBuildInputs = with goada-plutus; [
       hlint
       cabal-install
       haskell-language-server

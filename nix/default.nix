@@ -1,4 +1,3 @@
-{ source-repo-override }:
 let
   # Pratically, the only needed dependency is the plutus repository.
   sources = import ./sources.nix { inherit pkgs; };
@@ -11,11 +10,11 @@ let
 
   haskell-nix = pkgs.haskell-nix;
 
-  plutus-starter = import ./pkgs {
-    inherit pkgs haskell-nix sources plutus source-repo-override;
+  goada-plutus = import ./pkgs {
+    inherit pkgs haskell-nix sources plutus;
   };
 
 in
 {
-  inherit pkgs plutus-starter;
+  inherit pkgs goada-plutus;
 }

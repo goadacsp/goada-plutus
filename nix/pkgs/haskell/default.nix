@@ -4,7 +4,6 @@
 , sources
 , compiler-nix-name
 , libsodium-vrf
-, source-repo-override
 }:
 let
   # The Hackage index-state from cabal.project
@@ -23,7 +22,7 @@ let
 
   # The haskell project created by haskell-nix.cabalProject'
   project = import ./haskell.nix {
-    inherit lib haskell-nix compiler-nix-name gitignore-nix libsodium-vrf source-repo-override;
+    inherit lib haskell-nix compiler-nix-name gitignore-nix libsodium-vrf;
   };
 
   # All the packages defined by our project, including dependencies

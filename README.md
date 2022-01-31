@@ -1,8 +1,8 @@
-# Plutus Platform starter project
-![CI](https://github.com/input-output-hk/plutus-starter/actions/workflows/test.yml/badge.svg?branch=main)
+# GOADA Stake Pool
+![CI](https://github.com/andreabravetti/goada-plutus/actions/workflows/test.yml/badge.svg?branch=main)
 
 
-This project gives a simple starter project for using the Plutus Platform.
+This project contains all the Plutus code created by the GOADA Stake Pool.
 
 ## Setting up
 
@@ -56,149 +56,81 @@ Afterwards, the command `cabal build` from the terminal should work (if `cabal` 
 Also included in the environment is a working [Haskell Language Server](https://github.com/haskell/haskell-language-server) you can integrate with your editor.
 See [here](https://github.com/haskell/haskell-language-server#configuring-your-editor) for instructions.
 
-## The Plutus Application Backend (PAB) example
+## The GOADA Plutus policy script
 
-We have provided an example PAB application in `./pab`. With the PAB we can serve and interact
-with contracts over a web API. You can read more about the PAB here: [PAB Architecture](https://github.com/input-output-hk/plutus-apps/blob/main/plutus-pab/ARCHITECTURE.adoc).
+Open VSCode with devcontainer and run this command in the terminal:
 
-Here, the PAB is configured with one contract, the `Game` contract from `./examples/src/Plutus/Contracts/Game.hs`.
-
-Here's an example of running and interacting with this contract via the API. For this it will help if you
-have `jq` installed.
-
-1. Build the PAB executable:
-
-```
-cabal build plutus-starter-pab
+```sh
+[devcontainer]$ cabal update && cabal build
 ```
 
-2. Run the PAB binary:
+Once the project was built you can create the policy script running:
 
 ```
-cabal exec -- plutus-starter-pab
-````
-
-This will then start up the server on port 9080. The devcontainer process will then automatically expose this port so that you can connect to it from any terminal (it doesn't have to be a terminal running in the devcontainer).
-
-First, let's verify that the game is present in the server:
-
-3. Check what contracts are present:
-
-```
-curl -s http://localhost:9080/api/contract/definitions | jq
+[devcontainer]$ cabal run goada-plutus-app 85724832a16308a6c13e93a953d55d60b7d1b23e1e72052d4ca1bb10 1642807859000
+Up to date
+Creating the plutus policy script
+Created the plutus policy script => minting-policy-85724832a16308a6c13e93a953d55d60b7d1b23e1e72052d4ca1bb10-1642807859000.plutus
 ```
 
-You should receive a list of contracts and the endpoints that can be called on them, and the arguments
-required for those endpoints.
+Please note that the given date is in millisecond:
 
-We're interested in the `GameContract` one.
+If you want ten minutes from now you can use ```$(expr $(date +"%s") + $(expr 60 \* 10))000```
 
-#### Playing the guessing game over the API
+And see the produced plutus cbor:
 
-The game has two players (wallets). One will initialise the contract and lock a value inside. Another
-wallet will then make guesses. Supposing they guess correctly, they'll receive the funds that were
-locked; otherwise, they won't!
-
-
-1. Create wallets
-```
-export WALLET_ID_1=`curl -s -d '' http://localhost:9080/wallet/create | jq '.wiWallet.getWalletId'`
-export WALLET_ID_2=`curl -s -d '' http://localhost:9080/wallet/create | jq '.wiWallet.getWalletId'`
+```sh
+[devcontainer]$ cat minting-policy-85724832a16308a6c13e93a953d55d60b7d1b23e1e72052d4ca1bb10-1642807859000.plutus
 ```
 
-2. Start the instances:
-
-```
-# Wallet 1
-curl -s -H "Content-Type: application/json" \
-  --request POST \
-  --data '{"caID": "GameContract", "caWallet":{"getWalletId": '$WALLET_ID_1'}}' \
-  http://localhost:9080/api/contract/activate | jq
-
-# Wallet 2
-curl -s -H "Content-Type: application/json" \
-  --request POST \
-  --data '{"caID": "GameContract", "caWallet":{"getWalletId": '$WALLET_ID_2'}}' \
-  http://localhost:9080/api/contract/activate | jq
+```json
+{
+    "type": "PlutusScriptV1",
+    "description": "",
+    "cborHex": "590d31590d2e0100...483c37353bf3d7c1"
+}
 ```
 
-From these two queries you will get back two contract instance IDs. These will be needed
-in the subsequent steps for running actions against. We can optionally take a look at the state
-of the contract with the `status` API:
+## Build uplc to plofile the script
 
-3. Get the status
+Clone the plutus repository
 
-```
-export INSTANCE_ID=...
-curl -s http://localhost:9080/api/contract/instance/$INSTANCE_ID/status | jq
+```sh
+git clone https://github.com/input-output-hk/plutus.git
 ```
 
-This has a lot of information; and in particular we can see what endpoints are still available
-to call.
+Install nix [as described here](https://nixos.org/download.html)
 
-4. Start the game by locking some value inside
-
-Now, let's call the `lock` endpoint to start the game. In order to do so, we need to construct
-a JSON representation of the `LockParams` that the endpoint takes (look at `Game.hs`). The easiest
-way is to simply build the term in haskell and ask `aeson` to encode it. From the terminal:
-
-```
-cabal repl
-> import Plutus.Contracts.Game
-> import Ledger.Ada
-> args = LockParams { secretWord = "eagle", amount = lovelaceValueOf 90 }
-> import Data.Aeson
-> import Data.ByteString.Lazy.Char8 as BSL
-> BSL.putStrLn $ encode args
-{"amount":{"getValue":[[{"unCurrencySymbol":""},[[{"unTokenName":""},90]]]]},"secretWord":"eagle"}
+```sh
+sh <(curl -L https://nixos.org/nix/install) --daemon
 ```
 
-Great! This is all we need to call the `lock` endpoint, so let's do that now with
-the instance from Wallet 1:
+Enter nix-shell
 
-5. Lock some value (Wallet 1)
-
-```
-export INSTANCE_ID=...
-curl -H "Content-Type: application/json" \
-  --request POST \
-  --data '{"amount":{"getValue":[[{"unCurrencySymbol":""},[[{"unTokenName":""},90]]]]},"secretWord":"eagle"}' \
-  http://localhost:9080/api/contract/instance/$INSTANCE_ID/endpoint/lock
+```sh
+cd plutus
+nix-shell
 ```
 
-We can do likewise to work out what the JSON for `GuessParams` is, and then make a guess from
-Wallet 2:
+Inside nix-shell
 
-6. Make a guess (Wallet 2)
-
-```
-export INSTANCE_ID=...
-curl -H "Content-Type: application/json" \
-  --request POST \
-  --data '{"guessWord": "duck"}' \
-  http://localhost:9080/api/contract/instance/$INSTANCE_ID/endpoint/guess
+```sh
+cd plutus-core
+cabal update
+cabal build
 ```
 
-Note that this guess is wrong, so in the log of the server we will see that the transaction
-didn't validate.
+Test uplc
 
-As an exercise, you can now spin up another instance for Wallet 2 and make a correct guess, and
-confirm that the transaction validates and the Ada is transferred into the right wallet.
+```sh
+cabal run uplc
+```
 
-Note that you can verify the balances by looking at the log of `plutus-starter-pab`
-when exiting it by pressing return.
-
-Finally, also node that the PAB also exposes a websocket, which you can read about in
-the general [PAB Architecture documentation](https://github.com/input-output-hk/plutus-apps/blob/main/plutus-pab/ARCHITECTURE.adoc).
-
+FIXME: TO BE COMPLETED
 
 ## Support/Issues/Community
 
 If you're looking for support, or would simply like to report a bug, feature
-request, etc please do so over on the main [plutus
-repository](https://github.com/input-output-hk/plutus).
-
-For more interactive discussion, you can join the [IOG Technical Community
-Discord](https://discord.gg/sSF5gmDBYg).
+request, etc please do so over on the main [goada plutus repository](https://github.com/andreabravetti/goada-plutus).
 
 Thanks!

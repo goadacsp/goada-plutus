@@ -1,9 +1,8 @@
-{ source-repo-override ? { } }:
 ########################################################################
-# default.nix -- The top-level nix build file for plutus-starter.
+# default.nix -- The top-level nix build file for goada-plutus.
 #
 # This file defines various attributes that are used for building and
-# developing plutus-starter.
+# developing goada-plutus.
 #
 ########################################################################
 
@@ -11,7 +10,7 @@ let
   # Here a some of the various attributes for the variable 'packages':
   #
   # { pkgs
-  #   plutus-starter: {
+  #   goada-plutus: {
   #     haskell: {
   #       project # The Haskell project created by haskell-nix.project
   #       packages # All the packages defined by our project, including dependencies
@@ -23,13 +22,13 @@ let
   #     haskell-language-server
   #   }
   # }
-  packages = import ./nix { inherit source-repo-override; };
+  packages = import ./nix;
 
-  inherit (packages) pkgs plutus-starter;
-  project = plutus-starter.haskell.project;
+  inherit (packages) pkgs goada-plutus;
+  project = goada-plutus.haskell.project;
 in
 {
-  inherit pkgs plutus-starter;
+  inherit pkgs goada-plutus;
 
   inherit project;
 }
