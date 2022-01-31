@@ -1,5 +1,5 @@
 # GOADA Stake Pool
-![CI](https://github.com/andreabravetti/goada-plutus/actions/workflows/test.yml/badge.svg?branch=main)
+![CI](https://github.com/goadacsp/goada-plutus/actions/workflows/test.yml/badge.svg?branch=main)
 
 
 This project contains all the Plutus code created by the GOADA Stake Pool.
@@ -131,6 +131,6 @@ FIXME: TO BE COMPLETED
 ## Support/Issues/Community
 
 If you're looking for support, or would simply like to report a bug, feature
-request, etc please do so over on the main [goada plutus repository](https://github.com/andreabravetti/goada-plutus).
+request, etc please do so over on the main [goada plutus repository](https://github.com/goadacsp/goada-plutus).
 
 Thanks!
