@@ -3,4 +3,4 @@ cradle:
     - path: "./src"
       component: "goada-plutus:lib:goada-plutus"
     - path: "./app"
-      component: "goada-plutus:exe:compile-into-plutus"
+      component: "goada-plutus:exe:goada-plutus-app"
