@@ -2,7 +2,7 @@
 ![CI](https://github.com/goadacsp/goada-plutus/actions/workflows/test.yml/badge.svg?branch=main)
 
 
-This project contains all the Plutus code created by the GOADA Stake Pool.
+This project contains all the open source Plutus code created by the GOADA Stake Pool.
 
 ## Setting up
 
